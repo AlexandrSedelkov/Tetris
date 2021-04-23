@@ -15,49 +15,43 @@ namespace Tetris
         public int sizeMatrix;
         public int sizeNextMatrix;
 
-        int[,] line = new int[4, 4]
+        readonly int[,] line = new int[4, 4]
             {
-                {0, 0, 0, 1},
-                {0, 0, 0, 1},
-                {0, 0, 0, 1},
-                {0, 0 ,0, 1}
+                {0, 0, 1, 0},
+                {0, 0, 1, 0},
+                {0, 0, 1, 0},
+                {0, 0 ,1, 0}
             };
-
-        int[,] triangle = new int[3, 3]
+        readonly int[,] triangle = new int[3, 3]
             {
                 {0, 0, 0},
                 {0, 2, 0},
                 {2 ,2, 2}
             };
-
-        int[,] square = new int[2, 2]
+        readonly int[,] square = new int[2, 2]
             {
                 {3, 3},
                 {3 ,3}
             };
-
-        int[,] zigzag = new int[3, 3]
+        readonly int[,] zigzag = new int[3, 3]
             {
                 {0, 0, 0},
                 {0, 4, 4},
                 {4, 4, 0}
             };
-
-        int[,] curveLine = new int[3, 3]
+        readonly int[,] curveLine = new int[3, 3]
             {
                 {0, 0, 5},
                 {0, 0, 5},
                 {0 ,5, 5}
             };
-
-        int[,] obrcurveLine = new int[3, 3]
+        readonly int[,] obrcurveLine = new int[3, 3]
             {
                 {6, 0, 0},
                 {6, 0, 0},
                 {6 ,6, 0}
             };
-
-        int[,] obrzigzag = new int[3, 3]
+        readonly int[,] obrzigzag = new int[3, 3]
             {
                 {0, 0, 0},
                 {7, 7, 0},
@@ -74,36 +68,47 @@ namespace Tetris
             sizeNextMatrix = (int)Math.Sqrt(nextMatrix.Length);
         }
 
+        public void ResetShape(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+            matrix = nextMatrix;
+            sizeMatrix = (int)Math.Sqrt(matrix.Length);
+            nextMatrix = GenerateMatrix();
+            sizeNextMatrix = (int)Math.Sqrt(nextMatrix.Length);
+        }
+
         public int[,] GenerateMatrix()
         {
-            matrix = line;
+            int[,] _matrix = line;
             Random r = new Random();
-            switch (r.Next(1, 8))
+            switch (r.Next(1, 6))
             {
                 case 1:
-                    matrix = line;
+                    _matrix = line;
                     break;
                 case 2:
-                    matrix = triangle;
+                    _matrix = triangle;
                     break;
                 case 3:
-                    matrix = square;
+                    _matrix = square;
                     break;
                 case 4:
-                    matrix = zigzag;
+                    _matrix = zigzag;
                     break;
                 case 5:
-                    matrix = curveLine;
+                    _matrix = curveLine;
                     break;
                 case 6:
-                    matrix = obrcurveLine;
+                    _matrix = obrcurveLine;
                     break;
                 case 7:
-                    matrix = obrzigzag;
+                    _matrix = obrzigzag;
                     break;
             }
-            return matrix;
+            return _matrix;
         }
+
         public void RotateShape()
         {
             int[,] tempMatrix = new int[sizeMatrix, sizeMatrix];
@@ -127,7 +132,9 @@ namespace Tetris
                 for (int i = 0; i < Math.Abs(x) + 1; i++)
                     MoveRight();
             }
+
         }
+
         public void MoveDown()
         {
             y++;

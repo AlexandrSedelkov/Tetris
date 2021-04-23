@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 
 namespace Tetris
 {
@@ -16,20 +9,24 @@ namespace Tetris
         static Shape currentShape;
 
         readonly static int[,] map = new int[20, 10];
-        readonly int rectangleSize = 25;
+        readonly static int rectangleSize = 25;
         readonly int indent = 50;
+        readonly static int nextIndent1 = 350;
+        readonly static int nextIndent2 = 290;
         private int linesRemoved = 0;
-        private int score = 0;
+        private static int score = 0;
         private int interval = 300;
 
         public TetrisForm()
         {
             InitializeComponent();
+
             Init();
         }
+
         private void Init()
         {
-            currentShape = new Shape(3, 0);
+            currentShape = new Shape(3,0);
 
             this.KeyDown += new KeyEventHandler(KeysFunctions);
 
@@ -38,7 +35,6 @@ namespace Tetris
 
             timer.Interval = interval;
             timer.Tick += new EventHandler(Update);
-            timer.Start();
 
             Invalidate();
         }
@@ -93,10 +89,12 @@ namespace Tetris
             {
                 for (int j = currentShape.x; j < currentShape.x + currentShape.sizeMatrix; j++)
                 {
-                    if (j >= 0 && j <= 7)
+                    if (j >= 0 && j <= map.GetLength(1)-1)
                     {
                         if (map[i, j] != 0 && currentShape.matrix[i - currentShape.y, j - currentShape.x] == 0)
+                        {
                             return true;
+                        }
                     }
                 }
             }
@@ -107,7 +105,7 @@ namespace Tetris
             switch (e.KeyCode)
             {
 
-                case Keys.S:
+                case Keys.Up:
                     {
                         if (!AbilityToRotate())
                         {
@@ -141,6 +139,20 @@ namespace Tetris
                         Invalidate();
                     }
                     break;
+                case Keys.Space:
+                    {
+                        if (timer.Enabled)
+                        {
+                            pauseButton.Text = "Play";
+                            timer.Stop();
+                        }
+                        else
+                        {
+                            pauseButton.Text = "Pause";
+                            timer.Start();
+                        }
+                    }
+                    break;
             }
         }
         private void DrawMap(Graphics g)
@@ -159,6 +171,7 @@ namespace Tetris
         {
             DrawMap(e.Graphics);
             DrawShape(e.Graphics);
+            ShowNextShape(e.Graphics);
         }
         private void Update(object sender, EventArgs e)
         {
@@ -172,10 +185,28 @@ namespace Tetris
                 GetArea();
                 CutMap();
                 timer.Interval = interval;
-                currentShape = new Shape(3, 0);
+                currentShape.ResetShape(3, 0);
+                if (VerticalCollision())
+                {
+                    ClearMap();
+                    timer.Tick -= new EventHandler(Update);
+                    timer.Stop();
+                    MessageBox.Show("Ваш результат: " + score, "Score", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Init();
+                }
             }
             GetArea();
             Invalidate();
+        }
+        public void ClearMap()
+        {
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    map[i, j] = 0;
+                }
+            }
         }
         private bool VerticalCollision()
         {
@@ -207,7 +238,9 @@ namespace Tetris
                     if (currentShape.matrix[i - currentShape.y, j - currentShape.x] != 0)
                     {
                         if (j + 1 * direction > map.GetLength(1) - 1 || j + 1 * direction < 0)
+                        {
                             return true;
+                        }
 
                         if (map[i, j + 1 * direction] != 0)
                         {
@@ -216,7 +249,9 @@ namespace Tetris
                                 return true;
                             }
                             if (currentShape.matrix[i - currentShape.y, j - currentShape.x + 1 * direction] == 0)
+                            {
                                 return true;
+                            }
                         }
                     }
                 }
@@ -285,6 +320,84 @@ namespace Tetris
                     }
                 }
             }
+        }
+        public static void ShowNextShape(Graphics e)
+        {
+            for (int i = 0; i < currentShape.sizeNextMatrix; i++)
+            {
+                for (int j = 0; j < currentShape.sizeNextMatrix; j++)
+                {
+                    if (currentShape.nextMatrix[i, j] == 1)
+                    {
+                        e.FillRectangle(Brushes.DeepPink, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                    if (currentShape.nextMatrix[i, j] == 2)
+                    {
+                        e.FillRectangle(Brushes.DarkGreen, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                    if (currentShape.nextMatrix[i, j] == 3)
+                    {
+                        e.FillRectangle(Brushes.DodgerBlue, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                    if (currentShape.nextMatrix[i, j] == 4)
+                    {
+                        e.FillRectangle(Brushes.Crimson, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                    if (currentShape.nextMatrix[i, j] == 5)
+                    {
+                        e.FillRectangle(Brushes.DarkViolet, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                    if (currentShape.nextMatrix[i, j] == 6)
+                    {
+                        e.FillRectangle(Brushes.Gold, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                    if (currentShape.nextMatrix[i, j] == 7)
+                    {
+                        e.FillRectangle(Brushes.Cyan, new Rectangle(nextIndent1 + j * rectangleSize + 1, nextIndent1 + i * rectangleSize + 1 - nextIndent2, rectangleSize - 1, rectangleSize - 1));
+                    }
+                }
+            }
+        }
+
+        private void PauseButton_Click(object sender, EventArgs e)
+        {
+            if (timer.Enabled)
+            {
+                pauseButton.Text = "Play";
+                timer.Stop();
+            }
+            else
+            {
+                pauseButton.Text = "Pause";
+                timer.Start();
+            }
+        }
+
+        private void ExitButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void AboutButton_Click(object sender, EventArgs e)
+        {
+            if (timer.Enabled)
+            {
+                pauseButton.Text = "Play";
+                timer.Stop();
+            }
+            string infoString = "";
+            infoString = "Для управление фигурами используйте стрелочку влево/вправо.\n";
+            infoString += "Чтобы ускорить падение фигуры - нажмите стрелочку вниз.\n";
+            infoString += "Для поворота фигуры используйте стрелочку вверх.\n";
+            MessageBox.Show(infoString, "Справка");
+        }
+
+        private void NewGameButton_Click(object sender, EventArgs e)
+        {
+            timer.Tick -= new EventHandler(Update);
+            timer.Stop();
+            ClearMap();
+            Init();
         }
     }
 }
