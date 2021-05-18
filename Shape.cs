@@ -82,7 +82,7 @@ namespace Tetris
         {
             int[,] _matrix = line;
             Random r = new Random();
-            switch (r.Next(1, 6))
+            switch (r.Next(1, 8))
             {
                 case 1:
                     _matrix = line;
@@ -105,6 +105,8 @@ namespace Tetris
                 case 7:
                     _matrix = obrzigzag;
                     break;
+
+                default: break;
             }
             return _matrix;
         }

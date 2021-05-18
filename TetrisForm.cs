@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Tetris
@@ -15,20 +16,28 @@ namespace Tetris
         readonly static int nextIndent2 = 290;
         private int linesRemoved = 0;
         private static int score = 0;
-        private int interval = 300;
+        private static int interval = 500;
+
+        private Label labelScore;
 
         public TetrisForm()
         {
             InitializeComponent();
 
+            labelScore = new Label();
+            this.Controls.Add(labelScore);
+
+            this.KeyDown += new KeyEventHandler(KeysFunctions);
+
             Init();
         }
+
+        private Records record;
+        private bool recordIsOpened = Records.recordIsOpened;
 
         private void Init()
         {
             currentShape = new Shape(3,0);
-
-            this.KeyDown += new KeyEventHandler(KeysFunctions);
 
             scoreLabel.Text = "Score: " + score;
             linesLabel.Text = "Lines: " + linesRemoved;
@@ -58,7 +67,7 @@ namespace Tetris
                     curRemovedLines++;
                     for (int k = i; k >= 1; k--)
                     {
-                        for (int n = 0; n < 8; n++)
+                        for (int n = 0; n < map.GetLength(1); n++)
                         {
                             map[k, n] = map[k-1, n];
                         }
@@ -75,7 +84,7 @@ namespace Tetris
             {
                 if (interval > 80)
                 {
-                    interval -= 10;
+                    interval -= 2;
                 }
             }
 
@@ -153,6 +162,19 @@ namespace Tetris
                         }
                     }
                     break;
+                case Keys.Enter:
+                    {
+                        timer.Tick -= new EventHandler(Update);
+
+                        timer.Stop();
+                        pauseButton.Text = "Play";
+                        ClearMap();
+                        score = 0;
+                        linesRemoved = 0;
+                        timer.Interval = interval;
+                        Init();
+                    }
+                    break;
             }
         }
         private void DrawMap(Graphics g)
@@ -191,7 +213,15 @@ namespace Tetris
                     ClearMap();
                     timer.Tick -= new EventHandler(Update);
                     timer.Stop();
-                    MessageBox.Show("Ваш результат: " + score, "Score", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (!recordIsOpened)
+                    {
+                        record = new Records(score);
+                        record.ShowDialog();
+                    }
+                    score = 0;
+                    linesRemoved = 0;
+                    pauseButton.Text = "Play";
+                    timer.Interval = interval;
                     Init();
                 }
             }
@@ -395,9 +425,29 @@ namespace Tetris
         private void NewGameButton_Click(object sender, EventArgs e)
         {
             timer.Tick -= new EventHandler(Update);
+
             timer.Stop();
+            pauseButton.Text = "Play";
             ClearMap();
+            score = 0;
+            linesRemoved = 0;
+            timer.Interval = interval;
             Init();
+        }
+
+        private void HighScoreTableLabel_Click(object sender, EventArgs e)
+        {
+            timer.Stop();
+            pauseButton.Text = "Play";
+            Form form = new Form();
+            ListBox list = new ListBox();
+            list.Dock = DockStyle.Fill;
+            form.Controls.Add(list);
+            for (int i = 0; i < Properties.Settings.Default.Records.Count; i++)
+            {
+                list.Items.Add(Properties.Settings.Default.Records[i]);
+            }
+            form.ShowDialog();
         }
     }
 }

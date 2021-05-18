@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Records.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Records.Designer.cs">
+      <DependentUpon>Records.cs</DependentUpon>
+    </Compile>
     <Compile Include="Shape.cs" />
     <Compile Include="TetrisForm.cs">
       <SubType>Form</SubType>
@@ -55,6 +61,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Records.resx">
+      <DependentUpon>Records.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TetrisForm.resx">
       <DependentUpon>TetrisForm.cs</DependentUpon>
     </EmbeddedResource>
